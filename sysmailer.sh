@@ -13,7 +13,7 @@ OPTIONS:
   -p   Path to the named pipe
   -r   Email recipients (only used for mails)
   -s   Email subject (default: name of the pipe)
-  -a   mailrc alias
+  -a   mailrc alias (default: gmail)
   -t   Timeout if no message in pipe (default: 1)
   -e   Echo instead of sending email
 EOF
