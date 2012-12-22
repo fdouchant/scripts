@@ -1,4 +1,0 @@
-scripts
-=======
-
-Linux administration scripts
