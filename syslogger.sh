@@ -6,7 +6,7 @@ usage()
 cat << EOF
 usage: $0 [options] command
 
-This script run the given command and log error and/or success to syslog.
+This script run the given command and log error (and success) to syslog.
 
 OPTIONS:
   -h   Show this message

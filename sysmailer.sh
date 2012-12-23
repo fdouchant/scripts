@@ -11,8 +11,8 @@ This script get any messages from the given named pipe and send it by mail (or e
 OPTIONS:
   -h   Show this message
   -p   Path to the named pipe
-  -r   Email recipients (only used for mails)
-  -s   Email subject (default: name of the pipe)
+  -r   Email recipients (only used for mailing)
+  -s   Email subject (default: the hostname of the machine)
   -a   mailrc alias (default: gmail)
   -t   Timeout if no message in pipe (default: 1)
   -e   Echo instead of sending email
