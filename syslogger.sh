@@ -37,7 +37,7 @@ do
     esac
 done
 # remove options
-shift $(($OPTIND - 1))
+shift $((OPTIND-1))
 
 # keep 
 ERROR_FILE=$(mktemp)
@@ -51,12 +51,12 @@ if [[ $CODE -eq 0 ]]; then
     cat $SUCCESS_FILE
     if [ -n "$SUCCESS_PRIORITY" ]; then
         # log success
-        logger -t $0 -p $SUCCESS_PRIORITY -- $(cat $SUCCESS_FILE)
+        logger -t $1 -p $SUCCESS_PRIORITY -- [$@] $(cat $SUCCESS_FILE)
     fi
 else
     # command is NOK
     cat $ERROR_FILE
-    logger -t $0 -p $ERROR_PRIORITY -- $(cat $ERROR_FILE)
+    logger -t $1 -p $ERROR_PRIORITY -- [$@] $(cat $ERROR_FILE)
 fi
 rm $ERROR_FILE; rm $SUCCESS_FILE
 exit $CODE
