@@ -1,5 +1,5 @@
 #!/bin/bash
-# Argument = -p <named pipe> -r <recipients> -s <mail subject [named pipe name OR $$HOSTNAME]> -a <mail account [not set]> -t <timeout in sec [1]> -e
+# Argument = -p <named pipe> -r <recipients> -s <mail subject [$$HOSTNAME]> -a <mail account [not set]> -t <timeout in sec [1]> -e
 
 usage()
 {
