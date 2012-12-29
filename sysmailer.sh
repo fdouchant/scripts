@@ -59,8 +59,16 @@ done
 # remove options
 shift $(($OPTIND - 1))
 
-# need named pipe
-if [ -z "$NAMED_PIPE" -o $ECHO -eq 0 -a -z "$RECIPIENTS" ]; then
+# mandatory parameters
+if [ -z "$NAMED_PIPE" ]; then
+    echo "ERROR: -p option is mandatory"
+    echo
+    usage
+    exit 1
+fi
+if [ $ECHO -eq 0 -a -z "$RECIPIENTS" ]; then
+    echo "ERROR: -r option is mandatory if -e option is not set"
+    echo
     usage
     exit 1
 fi
