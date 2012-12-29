@@ -1,5 +1,5 @@
 #!/bin/bash
-# Argument = -p <named pipe> -r <recipients> -s <mail subject [named pipe name OR $$HOSTNAME]> -a <mailx alias [gmail]> -t <timeout in sec [1]> -e
+# Argument = -p <named pipe> -r <recipients> -s <mail subject [named pipe name OR $$HOSTNAME]> -a <mail account [not set]> -t <timeout in sec [1]> -e
 
 usage()
 {
@@ -13,7 +13,7 @@ OPTIONS:
   -p   Path to the named pipe
   -r   Email recipients (only used for mailing)
   -s   Email subject (default: the hostname of the machine)
-  -a   mailrc alias (default: gmail)
+  -a   mail account. If set, use the given mail account (man mail). Otherwise use default mail configuration. (default: not set)
   -t   Timeout if no message in pipe (default: 1)
   -e   Echo instead of sending email
 EOF
@@ -22,10 +22,10 @@ EOF
 NAMED_PIPE=
 RECIPIENTS=
 SUBJECT=$HOSTNAME
-ALIAS=gmail
+ACCOUNT=
 TMOUT=1
 ECHO=0
-while getopts "hp:r:s:t:e" OPTION
+while getopts "hp:r:s:a:t:e" OPTION
 do
     case $OPTION in
         h)
@@ -42,7 +42,7 @@ do
             SUBJECT=$OPTARG
             ;;
         a)
-            ALIAS=$OPTARG
+            ACCOUNT=$OPTARG
             ;;
         t)
             TMOUT=$OPTARG
@@ -65,6 +65,11 @@ if [ -z "$NAMED_PIPE" -o $ECHO -eq 0 -a -z "$RECIPIENTS" ]; then
     exit 1
 fi
 
+# mail account
+if [ -z "$ACCOUNT" ]; then
+    ACCOUNT="-A $ACCOUNT"
+fi
+
 # process each line of input and produce an alert email
 while read line < $NAMED_PIPE
 do
@@ -77,7 +82,7 @@ do
             echo ${SUBJECT}: ${line}
         else
         # send the alert
-            echo "${line}" | mailx -A ${ALIAS} -s "${SUBJECT}" ${RECIPIENTS}
+            echo "${line}" | mailx ${ACCOUNT} -s "${SUBJECT}" ${RECIPIENTS}
         fi
     fi
 done
