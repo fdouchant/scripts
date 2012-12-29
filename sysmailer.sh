@@ -90,7 +90,7 @@ if [ -n "$FILTER" -a ! -e "$FILTER" ]; then
 fi
 
 # mail account
-if [ -z "$ACCOUNT" ]; then
+if [ -n "$ACCOUNT" ]; then
     ACCOUNT="-A $ACCOUNT"
 fi
 
