@@ -39,9 +39,16 @@ done
 # remove options
 shift $((OPTIND-1))
 
-# keep 
+# keep stderr and stdout in files for multiple use
 ERROR_FILE=$(mktemp)
 SUCCESS_FILE=$(mktemp)
+# clean function to remove those files on exit
+function on_exit() {
+  rm -f $ERROR_FILE
+  rm -f $SUCCESS_FILE
+}
+trap on_exit EXIT
+
 # run command
 $@ 2>$ERROR_FILE 1>$SUCCESS_FILE
 CODE=$?
@@ -58,5 +65,4 @@ else
     cat $ERROR_FILE
     logger -t $1 -p $ERROR_PRIORITY -- [$@] $(cat $ERROR_FILE)
 fi
-rm $ERROR_FILE; rm $SUCCESS_FILE
 exit $CODE
