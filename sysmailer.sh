@@ -1,5 +1,5 @@
 #!/bin/bash
-# Argument = -p <named pipe> -r <recipients> -s <mail subject [$$HOSTNAME]> -a <mail account [not set]> -t <timeout in sec [1]> -e -f <filter file [not set]> -v
+# Argument = -p <named pipe> -r <recipients> -s <mail subject [$$HOSTNAME]> -a <mail account [not set]> -t <timeout in sec [1]> -e -f <filter file [not set]> -v -d
 
 usage()
 {
@@ -10,7 +10,7 @@ This script get any messages from the given named pipe and send it by mail (or e
 
 OPTIONS:
   -h   Show this message
-  -p   Path to the named pipe
+  -p   Path to the named pipe. If not provided then read from stdin.
   -r   Email recipients (only used for mailing)
   -s   Email subject (default: the hostname of the machine)
   -a   mail account. If set, use the given mail account (man mail). Otherwise use default mail configuration. (default: not set)
@@ -18,6 +18,7 @@ OPTIONS:
   -e   Echo instead of sending email
   -f   Filter file. If set, each line of the file works as a filter. Each event matching a filter will be skipped. (default: not set)
   -v   Verbose
+  -d   Debug
 EOF
 }
 
@@ -25,11 +26,12 @@ NAMED_PIPE=
 RECIPIENTS=
 SUBJECT=$HOSTNAME
 ACCOUNT=
-TMOUT=1
+TMOUT=1 # bash variable to set read timeout
 ECHO=0
 FILTER=
 VERBOSE=0
-while getopts "hp:r:s:a:t:ef:v" OPTION
+STDIN=0
+while getopts "hp:r:s:a:t:ef:vd" OPTION
 do
     case $OPTION in
         h)
@@ -60,6 +62,9 @@ do
         v)
             VERBOSE=1
             ;;
+        d)
+            set -x
+            ;;
         ?)
             usage
             exit 1
@@ -71,10 +76,8 @@ shift $(($OPTIND - 1))
 
 # mandatory parameters
 if [ -z "$NAMED_PIPE" ]; then
-    echo "ERROR: -p option is mandatory"
-    echo
-    usage
-    exit 1
+    if [ $VERBOSE -eq 1 ]; then echo "Using stdin as no pipe has been proveded (-p parameter)"; fi
+    STDIN=1
 fi
 if [ $ECHO -eq 0 -a -z "$RECIPIENTS" ]; then
     echo "ERROR: -r option is mandatory if -e option is not set"
@@ -94,28 +97,42 @@ if [ -n "$ACCOUNT" ]; then
     ACCOUNT="-A $ACCOUNT"
 fi
 
-# process each line of input and produce an alert email
-while read line < $NAMED_PIPE
-do
+# function to process each line
+function process_line {
     # remove any repeated messages
-    echo ${line} | grep "message repeated" > /dev/null 2>&1
+    echo "$1" | grep "message repeated" > /dev/null 2>&1
     repeated=$?
     # remove filtered message
     filtered=1
     if [ -n "$FILTER" ]; then
-        echo ${line} | grep --file=$FILTER > /dev/null 2>&1
+        echo "$1" | grep --file=$FILTER > /dev/null 2>&1
         filtered=$?
         # verbose
-        if [ $VERBOSE -eq 1 -a $filtered -eq 0 ]; then echo "Message filtered: ${line}"; fi
+        if [ $VERBOSE -eq 1 -a $filtered -eq 0 ]; then echo "Message filtered: $1"; fi
     fi
 
     if [ $repeated -eq 1 -a $filtered -eq 1 ]; then
         # echo message
         if [ $ECHO -eq 1 ]; then
-            echo ${SUBJECT}: ${line}
-        else
+            echo "${SUBJECT}: $1"
         # send the alert
-            echo "${line}" | mailx ${ACCOUNT} -s "${SUBJECT}" ${RECIPIENTS}
+        else
+            echo "$1" | mailx ${ACCOUNT} -s "${SUBJECT}" ${RECIPIENTS}
         fi
     fi
-done
+
+}
+
+# process each line of input and produce an alert email
+if [ $STDIN -eq 0 ]; then
+    while read line < $NAMED_PIPE; do
+        process_line "$line"
+    done
+else
+    while read line; do
+        process_line "$line"
+    done
+fi
+
+# unset debugger
+set +x
