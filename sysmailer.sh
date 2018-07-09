@@ -17,6 +17,7 @@ OPTIONS:
   -t   Timeout if no message in pipe (default: 1)
   -e   Echo instead of sending email
   -f   Filter file. If set, each line of the file works as a filter. Each event matching a filter will be skipped. (default: not set)
+  -m   Mail command to use (default: heirloom-mailx)
   -v   Verbose
   -d   Debug
 EOF
@@ -31,6 +32,7 @@ ECHO=0
 FILTER=
 VERBOSE=0
 STDIN=0
+MAIL_CMD=heirloom-mailx
 while getopts "hp:r:s:a:t:ef:vd" OPTION
 do
     case $OPTION in
@@ -64,6 +66,9 @@ do
             ;;
         d)
             set -x
+            ;;
+        m)
+            MAIL_CMD=$OPTARG
             ;;
         ?)
             usage
@@ -117,7 +122,7 @@ function process_line {
             echo "${SUBJECT}: $1"
         # send the alert
         else
-            echo "$1" | mailx ${ACCOUNT} -s "${SUBJECT}" ${RECIPIENTS}
+            echo "$1" | $MAIL_CMD ${ACCOUNT} -s "${SUBJECT}" ${RECIPIENTS}
         fi
     fi
 
