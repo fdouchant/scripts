@@ -17,7 +17,7 @@ OPTIONS:
   -t   Timeout if no message in pipe (default: 1)
   -e   Echo instead of sending email
   -f   Filter file. If set, each line of the file works as a filter. Each event matching a filter will be skipped. (default: not set)
-  -m   Mail command to use (default: heirloom-mailx)
+  -m   Mail command to use (default: s-nail)
   -v   Verbose
   -d   Debug
 EOF
@@ -32,7 +32,7 @@ ECHO=0
 FILTER=
 VERBOSE=0
 STDIN=0
-MAIL_CMD=heirloom-mailx
+MAIL_CMD=s-nail
 while getopts "hp:r:s:a:t:ef:vd" OPTION
 do
     case $OPTION in
